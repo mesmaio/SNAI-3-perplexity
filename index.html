@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perplexity Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080a09;
+      --surface: #0f1411;
+      --surface-subtle: #151c17;
+      --border: #233027;
+      --border-strong: #34493b;
+      --text: #e6f2e8;
+      --text-muted: #9eb5a4;
+      --text-soft: #6e8674;
+      --green: #22c55e;
+      --green-bright: #4ade80;
+      --green-soft: #0e2416;
+      --green-border: #1e5231;
+      --orange: #f97316;
+      --orange-hover: #ea580c;
+      --orange-bright: #fb923c;
+      --orange-soft: #26150a;
+      --orange-border: #5e3214;
+      --error-bg: #261010;
+      --error-text: #fca5a5;
+      --error-border: #7f1d1d;
+      --radius-lg: 8px;
+      --radius-md: 6px;
+      --radius-sm: 4px;
+      --shadow-card: 0 4px 0 #040504;
+      --font-game: "Silkscreen", ui-monospace, monospace;
+      --font-typewriter: "Courier Prime", "Courier New", Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-typewriter);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    code {
+      font-family: var(--font-typewriter);
+      background: var(--surface-subtle);
+      color: var(--green-bright);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9em;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    /* Header */
+    .app-header {
+      margin-bottom: 28px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 20px;
+    }
+
+    .app-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-game);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange-bright);
+      background: var(--orange-soft);
+      border: 1px solid var(--orange-border);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+    }
+
+    .app-header h1 {
+      margin: 0 0 10px;
+      font-family: var(--font-game);
+      font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--green-bright);
+      line-height: 1.2;
+    }
+
+    .app-subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-family: var(--font-typewriter);
+      font-size: 0.98rem;
+      max-width: 74ch;
+    }
+
+    /* Cards & Sections */
+    .card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: var(--green);
+      color: #080a09;
+      font-family: var(--font-game);
+      font-size: 0.82rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: var(--font-game);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .section-desc {
+      margin: 0 0 16px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    /* Status Pill & Progress */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-typewriter);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--text-soft);
+      flex-shrink: 0;
+    }
+
+    .status-pill.ready {
+      background: var(--green-soft);
+      color: var(--green-bright);
+      border-color: var(--green-border);
+    }
+    .status-pill.ready .status-dot {
+      background: var(--green-bright);
+    }
+
+    .status-pill.loading {
+      background: var(--orange-soft);
+      color: var(--orange-bright);
+      border-color: var(--orange-border);
+    }
+    .status-pill.loading .status-dot {
+      background: var(--orange);
+      animation: pulse 1.1s steps(2, start) infinite;
+    }
+
+    .status-pill.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: var(--error-border);
+    }
+    .status-pill.error .status-dot {
+      background: #ef4444;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--surface-subtle);
+      border: 1px solid var(--green-border);
+      display: none;
+    }
+
+    .progress-wrap.visible {
+      display: block;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-typewriter);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: #080a09;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      transition: width 0.2s ease;
+    }
+
+    .progress-bar.indeterminate {
+      width: 38%;
+      background: var(--orange);
+      animation: indeterminate 1.4s ease-in-out infinite;
+    }
+
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+
+    .error-banner {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+      font-family: var(--font-typewriter);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    /* Input & Buttons */
+    .input-label {
+      display: block;
+      font-family: var(--font-game);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .text-input {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 14px;
+      font-size: 1.02rem;
+      font-family: var(--font-typewriter);
+      color: var(--green-bright);
+      background: #080a09;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      transition: border-color 0.15s;
+    }
+
+    .text-input::placeholder {
+      color: var(--text-soft);
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-typewriter);
+      font-weight: 700;
+      font-size: 0.92rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.08s, opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      font-family: var(--font-game);
+      font-size: 0.82rem;
+      background: var(--orange);
+      color: #080a09;
+      border-color: var(--orange-bright);
+      padding: 11px 18px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--orange-hover);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: var(--surface-subtle);
+      color: var(--text);
+      border-color: var(--border-strong);
+      padding: 8px 13px;
+      font-size: 0.86rem;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--green-soft);
+      color: var(--green-bright);
+      border-color: var(--green);
+    }
+
+    .btn-pill {
+      background: #080a09;
+      color: var(--text-muted);
+      border: 1px solid var(--border-strong);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .btn-pill:hover:not(:disabled) {
+      background: var(--green-soft);
+      color: var(--green-bright);
+      border-color: var(--green);
+    }
+
+    .btn-ghost-danger {
+      background: transparent;
+      color: var(--text-soft);
+      border: 1px solid transparent;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-ghost-danger:hover:not(:disabled) {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: var(--error-border);
+    }
+
+    .samples-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .samples-label {
+      font-family: var(--font-game);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      margin-right: 2px;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(8, 10, 9, 0.35);
+      border-top-color: #080a09;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      display: none;
+    }
+
+    .btn-primary.is-loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Results Container & Reveal */
+    .results-region {
+      display: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    .results-region.visible {
+      display: block;
+    }
+
+    .results-region.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* KPI Summary Banner */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 2px solid var(--green-border);
+      box-shadow: var(--shadow-card);
+    }
+
+    .kpi-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-label {
+      font-family: var(--font-game);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-soft);
+    }
+
+    .kpi-value {
+      font-family: var(--font-typewriter);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+    }
+
+    .kpi-note {
+      font-family: var(--font-typewriter);
+      font-size: 0.88rem;
+      color: var(--orange-bright);
+    }
+
+    /* Two-column grid for real results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 18px;
+      background: #080a09;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-typewriter);
+      font-size: 0.92rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--surface-subtle);
+      color: var(--orange-bright);
+      font-family: var(--font-game);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: var(--surface);
+    }
+
+    .num-col {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    thead th.num-col {
+      text-align: right;
+    }
+
+    .idx-col {
+      color: var(--text-soft);
+      font-variant-numeric: tabular-nums;
+      width: 42px;
+    }
+
+    .token-badge {
+      display: inline-block;
+      font-family: var(--font-typewriter);
+      font-size: 0.88rem;
+      font-weight: 700;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 2px 7px;
+      color: var(--green-bright);
+      white-space: pre;
+    }
+
+    .token-badge.low-prob {
+      background: var(--orange-soft);
+      border-color: var(--orange);
+      color: var(--orange-bright);
+    }
+
+    /* Step-by-step breakdown */
+    .steps-box {
+      display: grid;
+      gap: 10px;
+      background: #080a09;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .step-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+
+    .step-row:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .step-label {
+      font-family: var(--font-game);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-soft);
+    }
+
+    .step-math {
+      font-family: var(--font-typewriter);
+      font-size: 0.9rem;
+      color: var(--text);
+      word-break: break-word;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step-final {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .perplexity-big {
+      font-family: var(--font-typewriter);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .takeaway-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 11px;
+      border-radius: var(--radius-sm);
+      background: var(--orange-soft);
+      border: 1px solid var(--orange-border);
+      font-family: var(--font-typewriter);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--orange-bright);
+    }
+
+    /* Next Token Bar Chart */
+    .bars-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 32px minmax(88px, auto) 1fr 66px;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: #080a09;
+    }
+
+    .bar-row.is-top {
+      background: var(--green-soft);
+      border-color: var(--green-border);
+    }
+
+    .bar-rank {
+      font-family: var(--font-game);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bar-row.is-top .bar-rank {
+      color: var(--green-bright);
+    }
+
+    .bar-track {
+      height: 10px;
+      background: var(--surface-subtle);
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--orange);
+      transition: width 0.3s ease;
+    }
+
+    .bar-row.is-top .bar-fill {
+      background: var(--green);
+    }
+
+    .bar-pct {
+      text-align: right;
+      font-family: var(--font-typewriter);
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    /* Section Divider */
+    .part-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 34px 0 22px;
+      color: var(--orange-bright);
+      font-family: var(--font-game);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .part-divider::before,
+    .part-divider::after {
+      content: "";
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+    }
+
+    /* Simulator Section */
+    .sim-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-game);
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: var(--orange-soft);
+      color: var(--orange-bright);
+      border: 1px solid var(--orange-border);
+    }
+
+    .preset-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #080a09;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .sim-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .sim-row-header {
+      display: grid;
+      grid-template-columns: 1fr 116px 76px;
+      gap: 8px;
+      padding: 0 2px;
+      font-family: var(--font-game);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-soft);
+    }
+
+    .sim-row {
+      display: grid;
+      grid-template-columns: 1fr 116px 76px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sim-input {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 0.94rem;
+      font-family: var(--font-typewriter);
+      color: var(--green-bright);
+      background: #080a09;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sim-input:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+    .sim-input.invalid {
+      border-color: #ef4444;
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .sim-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .sim-hint {
+      font-family: var(--font-typewriter);
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    @media (max-width: 880px) {
+      .results-grid,
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px 14px 48px;
+      }
+      .card {
+        padding: 18px 16px;
+      }
+      .input-row {
+        flex-direction: column;
+      }
+      .bar-row {
+        grid-template-columns: 28px minmax(72px, auto) 1fr 58px;
+        gap: 8px;
+      }
+      .sim-row-header,
+      .sim-row {
+        grid-template-columns: 1fr 96px 68px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="app-header">
+      <div class="app-eyebrow">Interactive Language Model Lab</div>
+      <h1>Perplexity Explorer</h1>
+      <p class="app-subtitle">
+        See how a real causal language model (<code>Xenova/distilgpt2</code>, quantized <code>q8</code>)
+        assigns probabilities to each token, turns them into perplexity, and predicts what comes next—or test the math by hand.
+      </p>
+    </header>
+
+    <!-- SECTION 1: TYPE A SENTENCE -->
+    <section class="card" aria-labelledby="sec1-title">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-num" aria-hidden="true">1</span>
+          <h2 id="sec1-title" class="section-title">Type a sentence</h2>
+        </div>
+        <div id="model-status-pill" class="status-pill" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="model-status-text">Ready (loads on first run)</span>
+        </div>
+      </div>
+
+      <label for="sentence-input" class="input-label">Sentence to evaluate</label>
+      <div class="input-row">
+        <input
+          id="sentence-input"
+          class="text-input"
+          type="text"
+          value="I love Python"
+          placeholder="Type a sentence, e.g. I love Python"
+          aria-label="Sentence to evaluate"
+          autocomplete="off"
+        />
+        <button id="calc-btn" class="btn btn-primary" type="button">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="calc-btn-label">Calculate perplexity</span>
+        </button>
+      </div>
+
+      <div class="samples-row" role="group" aria-label="Sample sentences">
+        <span class="samples-label">Try a sample:</span>
+        <button class="btn btn-pill sample-btn" type="button" data-sample="I love Python">I love Python</button>
+        <button class="btn btn-pill sample-btn" type="button" data-sample="Python love I">Python love I</button>
+        <button class="btn btn-pill sample-btn" type="button" data-sample="The capital of France is Paris">The capital of France is Paris</button>
+      </div>
+
+      <div id="download-progress-wrap" class="progress-wrap" aria-live="polite">
+        <div class="progress-meta">
+          <span id="download-progress-label">Downloading the model…</span>
+          <span id="download-progress-pct"></span>
+        </div>
+        <div class="progress-track">
+          <div id="download-progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div id="model-error-banner" class="error-banner" role="alert"></div>
+    </section>
+
+    <!-- REAL MODEL RESULTS (SECTIONS 2 & 3) -->
+    <div id="real-results-region" class="results-region" aria-live="polite">
+      <div id="real-kpi-strip" class="kpi-strip">
+        <div class="kpi-item">
+          <span class="kpi-label">Perplexity</span>
+          <span id="real-kpi-ppl" class="kpi-value">—</span>
+        </div>
+        <div class="kpi-item">
+          <span class="kpi-label">Tokens (N)</span>
+          <span id="real-kpi-n" class="kpi-value">—</span>
+        </div>
+        <div class="kpi-item">
+          <span class="kpi-label">Intuition</span>
+          <span id="real-kpi-intuition" class="kpi-note">—</span>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        <!-- SECTION 2: TOKEN PROBABILITIES -> PERPLEXITY -->
+        <section class="card" aria-labelledby="sec2-title">
+          <div class="section-header">
+            <div class="section-title-group">
+              <span class="section-num" aria-hidden="true">2</span>
+              <h2 id="sec2-title" class="section-title">Probability of each token → perplexity</h2>
+            </div>
+          </div>
+          <p class="section-desc">
+            GPT-2’s start marker <code>&lt;|endoftext|&gt;</code> (ID <code>50256</code>) is prepended so the first token also receives a conditional probability. Spaces are shown as <code>␣</code> and newlines as <code>↵</code>.
+          </p>
+
+          <div class="table-wrap">
+            <table aria-label="Token probabilities from Xenova/distilgpt2">
+              <thead>
+                <tr>
+                  <th scope="col" class="idx-col">#</th>
+                  <th scope="col">Token</th>
+                  <th scope="col" class="num-col">Probability P</th>
+                  <th scope="col" class="num-col">1 / P</th>
+                </tr>
+              </thead>
+              <tbody id="real-token-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="real-steps-box" class="steps-box" aria-label="Step-by-step perplexity calculation"></div>
+        </section>
+
+        <!-- SECTION 3: NEXT TOKEN PREDICTIONS -->
+        <section class="card" aria-labelledby="sec3-title">
+          <div class="section-header">
+            <div class="section-title-group">
+              <span class="section-num" aria-hidden="true">3</span>
+              <h2 id="sec3-title" class="section-title">What does the model predict next?</h2>
+            </div>
+          </div>
+          <p class="section-desc">
+            Top 8 next-token candidates from the model’s final position logits.
+          </p>
+          <div id="next-token-bars" class="bars-list" role="list" aria-label="Top 8 next-token predictions"></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="part-divider">Manual Simulator</div>
+
+    <!-- SECTION 4: TRY IT BY HAND -->
+    <section class="card" aria-labelledby="sec4-title">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-num" aria-hidden="true">4</span>
+          <h2 id="sec4-title" class="section-title">Try it by hand</h2>
+        </div>
+        <span class="sim-badge">Simulated, not from the model</span>
+      </div>
+      <p class="section-desc">
+        Edit token names and probabilities directly to see how surprising words affect perplexity in real time.
+      </p>
+
+      <div class="preset-toolbar" role="group" aria-label="Simulator presets">
+        <span class="samples-label">Presets:</span>
+        <button id="preset-ilp" class="btn btn-secondary" type="button">I love Python (0.5, 0.8, 0.2)</button>
+        <button id="preset-uniform" class="btn btn-secondary" type="button">All 1/8</button>
+        <button id="preset-surprising" class="btn btn-secondary" type="button">One surprising word</button>
+      </div>
+
+      <div class="sim-grid">
+        <div>
+          <div class="sim-row-header" aria-hidden="true">
+            <span>Token</span>
+            <span>Probability P</span>
+            <span></span>
+          </div>
+          <div id="sim-rows" class="sim-rows"></div>
+          <div class="sim-actions">
+            <button id="sim-add-btn" class="btn btn-secondary" type="button">+ Add token</button>
+            <span class="sim-hint">Valid range: 0.0001 to 1</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="table-wrap">
+            <table aria-label="Simulated token probabilities">
+              <thead>
+                <tr>
+                  <th scope="col" class="idx-col">#</th>
+                  <th scope="col">Token</th>
+                  <th scope="col" class="num-col">Probability P</th>
+                  <th scope="col" class="num-col">1 / P</th>
+                </tr>
+              </thead>
+              <tbody id="sim-token-tbody"></tbody>
+            </table>
+          </div>
+          <div id="sim-steps-box" class="steps-box" aria-label="Simulated step-by-step perplexity calculation"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { AutoTokenizer, AutoModelForCausalLM, Tensor } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3";
+
+    const MODEL_ID = "Xenova/distilgpt2";
+    const BOS_TOKEN_ID = 50256; // <|endoftext|>
+
+    // DOM references
+    const sentenceInput = document.getElementById("sentence-input");
+    const calcBtn = document.getElementById("calc-btn");
+    const calcBtnLabel = document.getElementById("calc-btn-label");
+    const sampleBtns = Array.from(document.querySelectorAll(".sample-btn"));
+
+    const statusPill = document.getElementById("model-status-pill");
+    const statusText = document.getElementById("model-status-text");
+    const progressWrap = document.getElementById("download-progress-wrap");
+    const progressLabel = document.getElementById("download-progress-label");
+    const progressPct = document.getElementById("download-progress-pct");
+    const progressBar = document.getElementById("download-progress-bar");
+    const errorBanner = document.getElementById("model-error-banner");
+
+    const realResultsRegion = document.getElementById("real-results-region");
+    const realKpiPpl = document.getElementById("real-kpi-ppl");
+    const realKpiN = document.getElementById("real-kpi-n");
+    const realKpiIntuition = document.getElementById("real-kpi-intuition");
+    const realTokenTbody = document.getElementById("real-token-tbody");
+    const realStepsBox = document.getElementById("real-steps-box");
+    const nextTokenBars = document.getElementById("next-token-bars");
+
+    const simRowsContainer = document.getElementById("sim-rows");
+    const simAddBtn = document.getElementById("sim-add-btn");
+    const simTokenTbody = document.getElementById("sim-token-tbody");
+    const simStepsBox = document.getElementById("sim-steps-box");
+
+    // Model state
+    let tokenizer = null;
+    let model = null;
+    let isBusy = false;
+
+    // Helpers
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function visualizeWhitespace(tokenStr) {
+      return tokenStr.replace(/ /g, "␣").replace(/\n/g, "↵").replace(/\t/g, "⇥");
+    }
+
+    function formatProb(p) {
+      if (!Number.isFinite(p) || p <= 0) return "0";
+      if (p >= 0.01) return p.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+      if (p >= 0.0001) return p.toFixed(5).replace(/0+$/, "");
+      return p.toExponential(2);
+    }
+
+    function formatInvProb(inv) {
+      if (!Number.isFinite(inv)) return "∞";
+      if (inv >= 1000) return inv.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return inv.toFixed(2).replace(/\.00$/, "");
+    }
+
+    function formatPerplexity(ppl) {
+      if (!Number.isFinite(ppl)) return "∞";
+      if (ppl >= 1000) return ppl.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      if (Math.abs(ppl - Math.round(ppl)) < 1e-6) return String(Math.round(ppl));
+      return ppl.toFixed(2);
+    }
+
+    function setStatus(state, text) {
+      statusPill.className = "status-pill" + (state ? ` ${state}` : "");
+      statusText.textContent = text;
+    }
+
+    function showError(message) {
+      errorBanner.innerHTML = `<strong>Error:</strong> ${escapeHtml(message)}`;
+      errorBanner.classList.add("visible");
+      setStatus("error", "Model error");
+    }
+
+    function clearError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+
+    function setBusy(busy, buttonLabel = "Calculate perplexity") {
+      isBusy = busy;
+      calcBtn.disabled = busy;
+      calcBtn.classList.toggle("is-loading", busy);
+      calcBtnLabel.textContent = buttonLabel;
+      for (const btn of sampleBtns) {
+        btn.disabled = busy;
+      }
+    }
+
+    function updateProgress(info) {
+      if (!info) return;
+      progressWrap.classList.add("visible");
+      const fileLabel = info.file ? ` (${info.file})` : "";
+      if (info.status === "progress" && typeof info.progress === "number" && Number.isFinite(info.progress)) {
+        const pct = Math.max(0, Math.min(100, info.progress));
+        progressBar.classList.remove("indeterminate");
+        progressBar.style.width = `${pct.toFixed(1)}%`;
+        progressLabel.textContent = `Downloading the model…${fileLabel}`;
+        progressPct.textContent = `${Math.round(pct)}%`;
+      } else if (info.status === "done") {
+        progressBar.classList.remove("indeterminate");
+        progressBar.style.width = "100%";
+        progressLabel.textContent = `Loaded${fileLabel}`;
+        progressPct.textContent = "100%";
+      } else {
+        progressBar.classList.add("indeterminate");
+        progressLabel.textContent = `Downloading the model…${fileLabel}`;
+        progressPct.textContent = "";
+      }
+    }
+
+    // Numerically stable log-softmax over one vocabulary row
+    function logSoftmaxRow(logitsData, rowOffset, vocabSize) {
+      let maxLogit = -Infinity;
+      for (let j = 0; j < vocabSize; j++) {
+        const val = logitsData[rowOffset + j];
+        if (val > maxLogit) maxLogit = val;
+      }
+      let sumExp = 0;
+      for (let j = 0; j < vocabSize; j++) {
+        sumExp += Math.exp(logitsData[rowOffset + j] - maxLogit);
+      }
+      const logZ = maxLogit + Math.log(sumExp);
+      const logProbs = new Float32Array(vocabSize);
+      for (let j = 0; j < vocabSize; j++) {
+        logProbs[j] = logitsData[rowOffset + j] - logZ;
+      }
+      return logProbs;
+    }
+
+    // Shared renderer for token table + 3-step perplexity breakdown
+    function renderPerplexityAnalysis(rows, tbodyEl, stepsEl) {
+      if (!rows.length) {
+        tbodyEl.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:18px;">Add at least one token with a valid probability.</td></tr>`;
+        stepsEl.innerHTML = `<div class="step-row"><span class="step-label">Waiting for valid tokens</span><span class="step-math">Enter probabilities between 0.0001 and 1 to compute perplexity.</span></div>`;
+        return { ppl: NaN, n: 0 };
+      }
+
+      let tbodyHtml = "";
+      let sumNegLogP = 0;
+      let product = 1;
+      const invTerms = [];
+      let hasZero = false;
+
+      rows.forEach((row, idx) => {
+        const p = row.p;
+        const valid = Number.isFinite(p) && p > 0;
+        const inv = valid ? 1 / p : Infinity;
+        if (valid) {
+          sumNegLogP += -Math.log(p);
+          product *= inv;
+          invTerms.push(formatInvProb(inv));
+        } else {
+          hasZero = true;
+          product = Infinity;
+          invTerms.push("∞");
+        }
+
+        const displayToken = visualizeWhitespace(row.token === "" ? "∅" : row.token);
+        const lowProbClass = valid && p < 0.05 ? " low-prob" : "";
+        tbodyHtml += `
+          <tr>
+            <td class="idx-col">${idx + 1}</td>
+            <td><span class="token-badge${lowProbClass}">${escapeHtml(displayToken)}</span></td>
+            <td class="num-col">${escapeHtml(formatProb(p))}</td>
+            <td class="num-col">${escapeHtml(formatInvProb(inv))}</td>
+          </tr>
+        `;
+      });
+
+      tbodyEl.innerHTML = tbodyHtml;
+
+      const n = rows.length;
+      const ppl = hasZero ? Infinity : Math.exp(sumNegLogP / n);
+      const pplFormatted = formatPerplexity(ppl);
+
+      const termsPreview = invTerms.length <= 10
+        ? invTerms.join(" × ")
+        : `${invTerms.slice(0, 6).join(" × ")} × … × ${invTerms[invTerms.length - 1]}`;
+
+      const productStr = Number.isFinite(product)
+        ? (product >= 1e6 ? product.toExponential(3) : product.toFixed(2).replace(/\.00$/, ""))
+        : "overflow (> 1e308; computed safely in log space)";
+
+      const approxTokens = Number.isFinite(ppl)
+        ? (ppl >= 100 ? Math.round(ppl).toLocaleString("en-US") : ppl.toFixed(1).replace(/\.0$/, ""))
+        : "∞";
+
+      stepsEl.innerHTML = `
+        <div class="step-row">
+          <span class="step-label">Step 1: Multiply all 1/P values</span>
+          <span class="step-math">${escapeHtml(termsPreview)} = ${escapeHtml(productStr)}</span>
+        </div>
+        <div class="step-row">
+          <span class="step-label">Step 2: Count tokens</span>
+          <span class="step-math">N = ${n}</span>
+        </div>
+        <div class="step-row">
+          <span class="step-label">Step 3: Perplexity = (product)^(1/N)</span>
+          <div class="step-final">
+            <span class="perplexity-big">${escapeHtml(pplFormatted)}</span>
+            <span class="takeaway-pill">Choosing between ~${escapeHtml(approxTokens)} equally likely tokens</span>
+          </div>
+        </div>
+      `;
+
+      return { ppl, n, approxTokens };
+    }
+
+    function renderNextTokenPredictions(lastLogProbs, topK = 8) {
+      // Track top K indices without sorting the whole 50,257-entry array
+      const top = [];
+      for (let id = 0; id < lastLogProbs.length; id++) {
+        const lp = lastLogProbs[id];
+        if (top.length < topK) {
+          top.push({ id, lp });
+          if (top.length === topK) top.sort((a, b) => b.lp - a.lp);
+        } else if (lp > top[topK - 1].lp) {
+          top[topK - 1] = { id, lp };
+          top.sort((a, b) => b.lp - a.lp);
+        }
+      }
+
+      const items = top.map((entry) => {
+        const prob = Math.exp(entry.lp);
+        const decoded = tokenizer.decode([entry.id]);
+        return { id: entry.id, prob, token: decoded };
+      });
+
+      const maxProb = items[0]?.prob || 1;
+      nextTokenBars.innerHTML = items.map((item, idx) => {
+        const pct = item.prob * 100;
+        const barWidth = Math.max(2, (item.prob / maxProb) * 100);
+        const displayToken = visualizeWhitespace(item.token);
+        const topClass = idx === 0 ? " is-top" : "";
+        return `
+          <div class="bar-row${topClass}" role="listitem">
+            <span class="bar-rank">#${idx + 1}</span>
+            <span><span class="token-badge">${escapeHtml(displayToken)}</span></span>
+            <div class="bar-track" aria-hidden="true">
+              <div class="bar-fill" style="width:${barWidth.toFixed(1)}%"></div>
+            </div>
+            <span class="bar-pct">${pct.toFixed(1)}%</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function ensureModelLoaded() {
+      if (tokenizer && model) return;
+
+      setStatus("loading", "Downloading the model…");
+      setBusy(true, "Downloading…");
+      progressWrap.classList.add("visible");
+
+      try {
+        tokenizer = await AutoTokenizer.from_pretrained(MODEL_ID);
+        model = await AutoModelForCausalLM.from_pretrained(MODEL_ID, {
+          dtype: "q8",
+          progress_callback: updateProgress,
+        });
+        progressWrap.classList.remove("visible");
+        setStatus("ready", "Model ready");
+      } catch (err) {
+        progressWrap.classList.remove("visible");
+        tokenizer = null;
+        model = null;
+        throw err;
+      }
+    }
+
+    async function calculateRealPerplexity() {
+      if (isBusy) return;
+      clearError();
+
+      const sentence = sentenceInput.value;
+      if (!sentence || sentence.trim().length === 0) {
+        showError("Please enter a non-empty sentence.");
+        return;
+      }
+
+      try {
+        await ensureModelLoaded();
+
+        setStatus("loading", "Calculating…");
+        setBusy(true, "Calculating…");
+
+        const encoded = Array.from(tokenizer.encode(sentence));
+        if (encoded.length === 0) {
+          showError("The input produced no tokens. Please enter some text.");
+          setStatus("ready", "Model ready");
+          setBusy(false);
+          return;
+        }
+
+        const ids = [BOS_TOKEN_ID, ...encoded];
+        const shape = [1, ids.length];
+        const inputTensor = new Tensor(
+          "int64",
+          BigInt64Array.from(ids, (id) => BigInt(id)),
+          shape
+        );
+        const attentionMask = new Tensor(
+          "int64",
+          BigInt64Array.from(ids, () => 1n),
+          shape
+        );
+        const positionIds = new Tensor(
+          "int64",
+          BigInt64Array.from(ids, (_, idx) => BigInt(idx)),
+          shape
+        );
+
+        const output = await model({
+          input_ids: inputTensor,
+          attention_mask: attentionMask,
+          position_ids: positionIds,
+        });
+        const logits = output.logits;
+        const vocabSize = logits.dims[2];
+        const logitsData = logits.data;
+
+        const tokenRows = [];
+        for (let i = 1; i < ids.length; i++) {
+          const prevLogProbs = logSoftmaxRow(logitsData, (i - 1) * vocabSize, vocabSize);
+          const tokenId = ids[i];
+          const p = Math.exp(prevLogProbs[tokenId]);
+          const tokenText = tokenizer.decode([tokenId]);
+          tokenRows.push({ token: tokenText, p });
+        }
+
+        const { ppl, n, approxTokens } = renderPerplexityAnalysis(tokenRows, realTokenTbody, realStepsBox);
+        realKpiPpl.textContent = formatPerplexity(ppl);
+        realKpiN.textContent = String(n);
+        realKpiIntuition.textContent = `Like choosing between ~${approxTokens} equally likely tokens at each step`;
+
+        const lastLogProbs = logSoftmaxRow(logitsData, (ids.length - 1) * vocabSize, vocabSize);
+        renderNextTokenPredictions(lastLogProbs, 8);
+
+        realResultsRegion.classList.add("visible");
+        requestAnimationFrame(() => {
+          realResultsRegion.classList.add("revealed");
+        });
+
+        setStatus("ready", "Model ready");
+      } catch (err) {
+        console.error(err);
+        showError(err?.message || "Failed to load or run Xenova/distilgpt2.");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    calcBtn.addEventListener("click", calculateRealPerplexity);
+
+    sentenceInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        calculateRealPerplexity();
+      }
+    });
+
+    for (const btn of sampleBtns) {
+      btn.addEventListener("click", () => {
+        if (isBusy) return;
+        sentenceInput.value = btn.dataset.sample || "";
+        calculateRealPerplexity();
+      });
+    }
+
+    // SECTION 4: SIMULATOR ("Try it by hand")
+    let simState = [
+      { token: "I", p: 0.5 },
+      { token: "love", p: 0.8 },
+      { token: "Python", p: 0.2 },
+    ];
+
+    function renderSimulatorRows() {
+      simRowsContainer.innerHTML = "";
+      simState.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "sim-row";
+
+        const tokInput = document.createElement("input");
+        tokInput.type = "text";
+        tokInput.className = "sim-input";
+        tokInput.value = item.token;
+        tokInput.placeholder = "Token";
+        tokInput.setAttribute("aria-label", `Simulated token ${index + 1} name`);
+        tokInput.addEventListener("input", () => {
+          simState[index].token = tokInput.value;
+          updateSimulatorOutput();
+        });
+
+        const probInput = document.createElement("input");
+        probInput.type = "number";
+        probInput.className = "sim-input";
+        probInput.min = "0.0001";
+        probInput.max = "1";
+        probInput.step = "any";
+        probInput.value = String(item.p);
+        probInput.setAttribute("aria-label", `Simulated token ${index + 1} probability`);
+        probInput.addEventListener("input", () => {
+          const val = parseFloat(probInput.value);
+          const isValid = Number.isFinite(val) && val > 0 && val <= 1;
+          probInput.classList.toggle("invalid", !isValid);
+          simState[index].p = isValid ? val : NaN;
+          updateSimulatorOutput();
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "btn btn-ghost-danger";
+        removeBtn.textContent = "Remove";
+        removeBtn.setAttribute("aria-label", `Remove token ${index + 1}`);
+        removeBtn.disabled = simState.length <= 1;
+        removeBtn.addEventListener("click", () => {
+          if (simState.length <= 1) return;
+          simState.splice(index, 1);
+          renderSimulatorRows();
+          updateSimulatorOutput();
+        });
+
+        row.appendChild(tokInput);
+        row.appendChild(probInput);
+        row.appendChild(removeBtn);
+        simRowsContainer.appendChild(row);
+      });
+    }
+
+    function updateSimulatorOutput() {
+      const validRows = simState.filter((r) => Number.isFinite(r.p) && r.p > 0 && r.p <= 1);
+      renderPerplexityAnalysis(validRows, simTokenTbody, simStepsBox);
+    }
+
+    function applyPreset(items) {
+      simState = items.map((x) => ({ ...x }));
+      renderSimulatorRows();
+      updateSimulatorOutput();
+    }
+
+    simAddBtn.addEventListener("click", () => {
+      simState.push({ token: `token${simState.length + 1}`, p: 0.5 });
+      renderSimulatorRows();
+      updateSimulatorOutput();
+    });
+
+    document.getElementById("preset-ilp").addEventListener("click", () => {
+      applyPreset([
+        { token: "I", p: 0.5 },
+        { token: "love", p: 0.8 },
+        { token: "Python", p: 0.2 },
+      ]);
+    });
+
+    document.getElementById("preset-uniform").addEventListener("click", () => {
+      applyPreset(
+        Array.from({ length: 8 }, (_, i) => ({ token: `w${i + 1}`, p: 0.125 }))
+      );
+    });
+
+    document.getElementById("preset-surprising").addEventListener("click", () => {
+      applyPreset([
+        { token: "The", p: 0.9 },
+        { token: "sky", p: 0.9 },
+        { token: "is", p: 0.9 },
+        { token: "banana", p: 0.01 },
+      ]);
+    });
+
+    // Initial render for simulator
+    renderSimulatorRows();
+    updateSimulatorOutput();
+  </script>
+</body>
+</html>
